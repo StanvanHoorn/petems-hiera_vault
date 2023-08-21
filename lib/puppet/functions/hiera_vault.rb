@@ -115,6 +115,7 @@ Puppet::Functions.create_function(:hiera_vault) do
       $hiera_vault_client = nil
     end
   }
+  $hiera_vault_shutdown.call
 
   def vault_token(options)
     token = nil
@@ -199,6 +200,7 @@ Puppet::Functions.create_function(:hiera_vault) do
       # If our Vault client has got cleaned up by a previous shutdown call, reinstate it
       if $hiera_vault_client.nil?
         $hiera_vault_client = Vault::Client.new
+        $hiera_vault_shutdown.call
       end
 
 
@@ -226,6 +228,7 @@ Puppet::Functions.create_function(:hiera_vault) do
 
       answer = nil
       strict_mode = (options.key?('strict_mode') and options['strict_mode'])
+
 
       if options['mounts']['generic']
         raise ArgumentError, "[hiera-vault] generic is no longer valid - change to kv"
@@ -311,7 +314,6 @@ Puppet::Functions.create_function(:hiera_vault) do
       raise Puppet::DataBinding::LookupError, "[hiera-vault] Could not find secret #{key}" if answer.nil? and strict_mode
 
       answer = context.not_found if answer.nil?
-      $hiera_vault_shutdown.call
 
       $cache.set(key, answer, options)
       return answer
