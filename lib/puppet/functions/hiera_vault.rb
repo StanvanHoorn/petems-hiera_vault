@@ -311,6 +311,7 @@ Puppet::Functions.create_function(:hiera_vault) do
       raise Puppet::DataBinding::LookupError, "[hiera-vault] Could not find secret #{key}" if answer.nil? and strict_mode
 
       answer = context.not_found if answer.nil?
+      $hiera_vault_shutdown.call
 
       $cache.set(key, answer, options)
       return answer
